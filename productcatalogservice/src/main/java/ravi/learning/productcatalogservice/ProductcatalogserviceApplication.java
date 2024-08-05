@@ -1,13 +1,13 @@
-package dev.ravikrishna.productcatalogservice;
+package ravi.learning.productcatalogservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OurFirstSpringBootApplication {
+public class ProductcatalogserviceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(OurFirstSpringBootApplication.class, args);
+		SpringApplication.run(ProductcatalogserviceApplication.class, args);
 	}
 
 }

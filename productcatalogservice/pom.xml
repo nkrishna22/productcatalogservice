@@ -8,11 +8,11 @@
 		<version>3.3.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>dev.ravikrishna</groupId>
+	<groupId>ravi.learning</groupId>
 	<artifactId>productcatalogservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Our first spring boot application</name>
-	<description>Demo project for Spring Boot</description>
+	<name>productcatalogservice</name>
+	<description>productcatalogservice</description>
 	<url/>
 	<licenses>
 		<license/>
