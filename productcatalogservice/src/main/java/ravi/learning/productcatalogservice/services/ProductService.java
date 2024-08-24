@@ -10,7 +10,7 @@ public interface ProductService {
 
     public Product getSingleProduct(Long productId);
 
-    public ProductDto addNewProduct(Product product);
+    public ProductDto addNewProduct(ProductDto product);
 
     public Product  updateProduct(Long productId, Product product);
     public boolean deleteProduct(Long productId);

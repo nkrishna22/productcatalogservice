@@ -44,7 +44,7 @@ public class FakeStoreProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductDto addNewProduct(Product product) {
+    public ProductDto addNewProduct(ProductDto product) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<ProductDto> response = restTemplate.postForEntity("https://fakestoreapi.com/products", product, ProductDto.class);
         ProductDto productDto = response.getBody();
