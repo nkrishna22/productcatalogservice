@@ -1,10 +1,17 @@
 package ravi.learning.productcatalogservice.services;
 
+import ravi.learning.productcatalogservice.dto.ProductDto;
+import ravi.learning.productcatalogservice.models.Product;
+
+import java.util.List;
+
 public interface ProductService {
-    public String getAllProducts();
+    public List<Product> getAllProducts();
 
-    public String getSingleProduct();
+    public Product getSingleProduct(Long productId);
 
-    public String updateProduct();
-    public String deleteProduct();
+    public ProductDto addNewProduct(Product product);
+
+    public Product  updateProduct(Long productId, Product product);
+    public boolean deleteProduct(Long productId);
 }

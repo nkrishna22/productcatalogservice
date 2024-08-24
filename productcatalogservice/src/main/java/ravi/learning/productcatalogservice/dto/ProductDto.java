@@ -9,9 +9,10 @@ import ravi.learning.productcatalogservice.models.Category;
 @AllArgsConstructor
 @ToString
 public class ProductDto {
+    private Long id;
     private String title;
     private double price;
     private String description;
-    private Category category;
+    private String category;
     private String image;
 }
