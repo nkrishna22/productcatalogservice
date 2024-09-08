@@ -1,16 +1,19 @@
 package ravi.learning.productcatalogservice.controllers;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import ravi.learning.productcatalogservice.dto.ProductDto;
+import ravi.learning.productcatalogservice.exceptions.NotFoundException;
 import ravi.learning.productcatalogservice.models.Category;
 import ravi.learning.productcatalogservice.models.Product;
 import ravi.learning.productcatalogservice.services.FakeStoreProductServiceImpl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class ProductController {
@@ -21,20 +24,31 @@ public class ProductController {
         this.fakeStoreProductService = fakeStoreProductService;
     }
 
-    public String getAllProducts() {
-        return "Getting all products";
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductDto>> getAllProducts() {
+        List<Product> products = fakeStoreProductService.getAllProducts();
+        List<ProductDto> answers = new ArrayList<>();
+        for(Product pros :products) {
+            ProductDto productDto = productDtoMapper(pros);
+            answers.add(productDto);
+        }
+        return new ResponseEntity<>(answers, HttpStatus.OK);
     }
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<ProductDto> getSingleProduct(@PathVariable(value = "productId") Long productId) {
-        Product product = fakeStoreProductService.getSingleProduct(productId);
-        ProductDto productDto = productDtoMapper(product);
+    public ResponseEntity<Optional<Product>> getSingleProduct(@PathVariable(value = "productId") Long productId) throws NotFoundException{
+        Optional<Product> productOptional = fakeStoreProductService.getSingleProduct(productId);
+        if(productOptional.isEmpty()) {
+            throw new NotFoundException("No product with product id: " + productId);
+        }
+
+
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 
         headers.add(
                 "auth-token","noaccess4uheyhey"
         );
-        return new ResponseEntity<>(productDto, headers, HttpStatus.OK);
+        return new ResponseEntity<>(productOptional, headers, HttpStatus.OK);
     }
 
     @PostMapping("/products")
@@ -45,23 +59,30 @@ public class ProductController {
     }
 
     @PutMapping("/products/{productId}")
-    public String updateProduct(@PathVariable(value = "productId") Long productId, @RequestBody ProductDto productDto) {
-        return "Product updated";
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable(value = "productId") Long productId, @RequestBody ProductDto productDto) {
+        ProductDto productDto1 = fakeStoreProductService.updateProduct(productId, productDto);
+        return new ResponseEntity<>(productDto1, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{productId}")
-    public String deleteProduct(@PathVariable(value = "ProductId") Long productId) {
-        return "Deleting Product";
+    @DeleteMapping("/products/{productId}")
+    public String deleteProduct(@PathVariable(value = "productId") Long productId) {
+/*        boolean result = fakeStoreProductService.deleteProduct(productId);
+        if(result) {
+            return "Product Deleted";
+        } else {
+            return "Unable to delete product with productId " + productId;
+        }*/
+        return null;
     }
 
-    public ProductDto productDtoMapper(Product product) {
+    public ProductDto productDtoMapper(Product product1) {
         ProductDto productDto = new ProductDto();
-        productDto.setId(product.getId());
-        productDto.setTitle(product.getTitle());
-        productDto.setPrice(product.getPrice());
-        productDto.setDescription(product.getDescription());
-        productDto.setImage(product.getImageUrl());
-        productDto.setCategory(product.getCategory().getName());
+        productDto.setId(product1.getId());
+        productDto.setTitle(product1.getTitle());
+        productDto.setPrice(product1.getPrice());
+        productDto.setDescription(product1.getDescription());
+        productDto.setImage(product1.getImageUrl());
+        productDto.setCategory(product1.getCategory().getName());
 
         return productDto;
     }
