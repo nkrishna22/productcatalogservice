@@ -1,5 +1,6 @@
 package ravi.learning.productcatalogservice.controllers;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -19,9 +20,11 @@ import java.util.Optional;
 public class ProductController {
 
     private FakeStoreProductServiceImpl fakeStoreProductService;
+    private ModelMapper mapper;
 
-    public ProductController(FakeStoreProductServiceImpl fakeStoreProductService) {
+    public ProductController(FakeStoreProductServiceImpl fakeStoreProductService, ModelMapper mapper) {
         this.fakeStoreProductService = fakeStoreProductService;
+        this.mapper = mapper;
     }
 
     @GetMapping("/products")
@@ -53,26 +56,25 @@ public class ProductController {
 
     @PostMapping("/products")
     public ResponseEntity<ProductDto> addNewProduct(@RequestBody ProductDto productDto) {
-        ProductDto productDto1 = fakeStoreProductService.addNewProduct(productDto);
+        Product product = fakeStoreProductService.addNewProduct(productDto);
 
-        return new ResponseEntity<>(productDto1, HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.map(product, ProductDto.class), HttpStatus.CREATED); // using ModelMapper module to map Product to ProductDto
     }
 
     @PutMapping("/products/{productId}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable(value = "productId") Long productId, @RequestBody ProductDto productDto) {
-        ProductDto productDto1 = fakeStoreProductService.updateProduct(productId, productDto);
+        Product product = fakeStoreProductService.updateProduct(productId, productDto);
+        ProductDto productDto1 = mapper.map(product, ProductDto.class);         // using ModelMapper to map Product to ProductDto
         return new ResponseEntity<>(productDto1, HttpStatus.OK);
     }
 
     @DeleteMapping("/products/{productId}")
-    public String deleteProduct(@PathVariable(value = "productId") Long productId) {
-/*        boolean result = fakeStoreProductService.deleteProduct(productId);
-        if(result) {
-            return "Product Deleted";
-        } else {
-            return "Unable to delete product with productId " + productId;
-        }*/
-        return null;
+    public ResponseEntity<ProductDto> deleteProduct(@PathVariable(value = "productId") Long productId) throws NotFoundException {
+        Optional<Product> productOptional = fakeStoreProductService.deleteProduct(productId);
+        if(productOptional.isEmpty()) {
+            throw new NotFoundException("No product with product id: " + productId);
+        }
+        return new ResponseEntity<>(mapper.map(productOptional, ProductDto.class), HttpStatus.OK);      // using ModdelMapper to map Product with ProductDto
     }
 
     public ProductDto productDtoMapper(Product product1) {

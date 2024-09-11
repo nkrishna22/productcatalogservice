@@ -1,5 +1,6 @@
 package ravi.learning.productcatalogservice.services;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,9 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import ravi.learning.productcatalogservice.clients.FakeStoreClient;
 import ravi.learning.productcatalogservice.dto.ProductDto;
+import ravi.learning.productcatalogservice.exceptions.NotFoundException;
 import ravi.learning.productcatalogservice.mapper.ProductMapper;
 import ravi.learning.productcatalogservice.models.Category;
 import ravi.learning.productcatalogservice.models.Product;
@@ -20,63 +23,49 @@ import java.util.*;
 @Service
 public class FakeStoreProductServiceImpl implements ProductService{
     private RestTemplateBuilder restTemplateBuilder;
+    private FakeStoreClient fakeStoreClient;
     private ProductMapper productMapper1;
+    private ModelMapper mapper;
 
-    public FakeStoreProductServiceImpl(RestTemplateBuilder restTemplateBuilder, ProductMapper productMapper1) {
+    public FakeStoreProductServiceImpl(RestTemplateBuilder restTemplateBuilder, ProductMapper productMapper1, FakeStoreClient fakeStoreClient, ModelMapper mapper) {
         this.restTemplateBuilder = restTemplateBuilder;
         this.productMapper1 = productMapper1;
+        this.fakeStoreClient = fakeStoreClient;
+        this.mapper = mapper;
     }
     @Override
     public List<Product> getAllProducts() {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<ProductDto[]> responses = restTemplate.getForEntity("https://fakestoreapi.com/products", ProductDto[].class);
+        List<ProductDto> productDtoList = fakeStoreClient.getAllProducts();
         List<Product> products = new ArrayList<>();
-
-        for(ProductDto productDto : responses.getBody()) {
-            Product product = productMapper1.toProductMapper(productDto);
-            products.add(product);
+        for(ProductDto productDto : productDtoList) {
+            products.add(mapper.map(productDto, Product.class));        // using ModelMapper module for mapping ProductDto with Product
         }
-
         return products;
     }
 
     @Override
-    public Optional<Product> getSingleProduct(Long productId) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<ProductDto> response = restTemplate.getForEntity("https://fakestoreapi.com/products/{id}", ProductDto.class, productId);
-//        (url, return type, parameters in url... should be mentioned)
-        ProductDto productDto = response.getBody();
-        if(productDto ==null) {
-            return Optional.empty();
-        }
-        return Optional.of(productMapper1.toProductMapper(productDto));
+    public Optional<Product> getSingleProduct(Long productId) throws NotFoundException {
+        Optional<ProductDto> productDto1= fakeStoreClient.getSingleProduct(productId);
+        return Optional.ofNullable(mapper.map(productDto1, Product.class));     // Using ModelMapper module for mapping ProductDto with Product
     }
 
     @Override
-    public ProductDto addNewProduct(ProductDto product) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<ProductDto> response = restTemplate.postForEntity("https://fakestoreapi.com/products", product, ProductDto.class);
-        ProductDto productDto = response.getBody();
-        return productDto;
-    }
+    public Product addNewProduct(ProductDto product) {
+        ProductDto productDto = fakeStoreClient.addNewProduct(product);
 
-    private <T> ResponseEntity<T> requestForEntity(HttpMethod httpMethod, String url, @Nullable Object request, Class<T> responseType, Object... uriVariables) throws RestClientException {
-        RestTemplate restTemplate = restTemplateBuilder.requestFactory(HttpComponentsClientHttpRequestFactory.class).build();
-        RequestCallback requestCallback = restTemplate.httpEntityCallback(request, responseType);
-        ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(responseType);
-        return restTemplate.execute(url, httpMethod, requestCallback, responseExtractor, uriVariables);
+        return mapper.map(productDto, Product.class);
     }
 
     @Override
-    public ProductDto updateProduct(Long productId, ProductDto product) {
-        /*RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<ProductDto> response = restTemplate.("https://fakestoreapi.com/products/{id}", product, ProductDto.class);*/
-        ResponseEntity<ProductDto> response = requestForEntity(HttpMethod.PUT, "https://fakestoreapi.com/products/{id}", product, ProductDto.class, productId);
-        return response.getBody();
+    public Product updateProduct(Long productId, ProductDto product) {
+        ProductDto productDto = fakeStoreClient.updateProduct(productId, product);
+        return mapper.map(productDto, Product.class);
     }
 
     @Override
-    public ProductDto deleteProduct(Long productId) {
-       return null;
+    public Optional<Product> deleteProduct(Long productId) throws NotFoundException {
+        Optional<ProductDto> productDto = fakeStoreClient.deleteProduct(productId);
+
+       return Optional.ofNullable(mapper.map(productDto, Product.class));
     }
 }
