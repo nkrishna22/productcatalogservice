@@ -22,14 +22,10 @@ import java.util.*;
 
 @Service
 public class FakeStoreProductServiceImpl implements ProductService{
-    private RestTemplateBuilder restTemplateBuilder;
     private FakeStoreClient fakeStoreClient;
-    private ProductMapper productMapper1;
     private ModelMapper mapper;
 
-    public FakeStoreProductServiceImpl(RestTemplateBuilder restTemplateBuilder, ProductMapper productMapper1, FakeStoreClient fakeStoreClient, ModelMapper mapper) {
-        this.restTemplateBuilder = restTemplateBuilder;
-        this.productMapper1 = productMapper1;
+    public FakeStoreProductServiceImpl(FakeStoreClient fakeStoreClient, ModelMapper mapper) {
         this.fakeStoreClient = fakeStoreClient;
         this.mapper = mapper;
     }

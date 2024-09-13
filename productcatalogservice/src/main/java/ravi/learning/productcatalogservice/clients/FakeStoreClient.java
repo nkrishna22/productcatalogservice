@@ -10,8 +10,11 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import ravi.learning.productcatalogservice.dto.CategoryDto;
+import ravi.learning.productcatalogservice.dto.FakeStoreCategoryDto;
 import ravi.learning.productcatalogservice.dto.ProductDto;
 import ravi.learning.productcatalogservice.exceptions.NotFoundException;
+import ravi.learning.productcatalogservice.models.Category;
 import ravi.learning.productcatalogservice.models.Product;
 
 import java.util.ArrayList;
@@ -67,13 +70,25 @@ public class FakeStoreClient {
 
         ResponseEntity<ProductDto> response = requestForEntity(HttpMethod.DELETE,"https://fakestoreapi.com/products/{productId}", productDto, ProductDto.class, productId);
         return Optional.ofNullable(response.getBody());
-         //ResponseEntity<ProductDto> response = restTemplate.exchange("https://fakestoreapi.com/products/{productId}", HttpMethod.DELETE, productDto, ProductDto.class, productId);
+
      }
+
+    public List<String> getAllCategories() {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        ResponseEntity<String[]> responses = restTemplate.getForEntity("https://fakestoreapi.com/products/categories", String[].class);
+        return Arrays.asList(responses.getBody());
+    }
+
+    public List<ProductDto> getAllProductsInCategory(String categoryName) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        ResponseEntity<ProductDto[]> responses = restTemplate.getForEntity("https://fakestoreapi.com/products/category/{categoryName}", ProductDto[].class, categoryName);
+        return Arrays.asList(responses.getBody());
+    }
 
     // customized function to update API to update the product
     private <T> ResponseEntity<T> requestForEntity(HttpMethod httpMethod, String url, @Nullable Object request, Class<T> responseType, Object... uriVariables) throws RestClientException {
         RestTemplate restTemplate = restTemplateBuilder.requestFactory(HttpComponentsClientHttpRequestFactory.class).build();
-        RequestCallback requestCallback = restTemplate.httpEntityCallback(request, responseType);
+        RequestCallback requestCallback = restTemplate.httpEntityCallback(request);
         ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(responseType);
         return restTemplate.execute(url, httpMethod, requestCallback, responseExtractor, uriVariables);
     }

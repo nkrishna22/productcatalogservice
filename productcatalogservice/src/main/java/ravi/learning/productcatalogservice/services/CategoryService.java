@@ -1,7 +1,11 @@
 package ravi.learning.productcatalogservice.services;
 
+import ravi.learning.productcatalogservice.models.Category;
+import ravi.learning.productcatalogservice.models.Product;
+
+import java.util.List;
+
 public interface CategoryService {
-    public String getAllCategories();
-    public String getSingleCategory();
-    public String getAllProductsInService();
+    public List<Category> getAllCategories();
+    public List<Product> getAllProductsInCategory(String productName);
 }
